@@ -1,0 +1,9 @@
+{% if user.is_authenticated %}
+<h2>Welcome, {{ user.username }}!</h2>
+<p>Your account is set to <strong>{{ user.profile.privacy }}</strong> mode.</p>
+<a href="{% url 'logout' %}">Logout</a>
+{% else %}
+<h2>Welcome to the Social Platform</h2>
+<a href="{% url 'login' %}">Login</a> |
+<a href="{% url 'register' %}">Register</a>
+{% endif %}
