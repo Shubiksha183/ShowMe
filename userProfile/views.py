@@ -27,7 +27,7 @@ def user_login(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, "Login successful!")
-                return redirect('home')  # Redirect to home/dashboard
+                return redirect('posts:create_post')
             else:
                 messages.error(request, "Invalid username or password")
     else:
@@ -40,7 +40,3 @@ def user_logout(request):
     logout(request)
     messages.success(request, "You have been logged out.")
     return redirect('login')
-
-@login_required
-def home(request):
-    return render(request, 'home.html', {'user': request.user})

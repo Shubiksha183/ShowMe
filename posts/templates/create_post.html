@@ -1,0 +1,29 @@
+{% block content %}
+<h2>All Posts</h2>
+
+<!-- Post Form -->
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Post</button>
+</form>
+
+<hr>
+
+<!-- Display Posts -->
+{% for post in posts %}
+<div>
+    <p><strong>{{ post.user.username }}</strong> - {{ post.created_at }}</p>
+    <p>{{ post.text_content }}</p>
+    {% if post.image %}
+    <img src="{{ post.image.url }}" width="200">
+    {% endif %}
+    {% if post.video %}
+    <video width="300" controls>
+        <source src="{{ post.video.url }}" type="video/mp4">
+    </video>
+    {% endif %}
+    <hr>
+</div>
+{% endfor %}
+{% endblock %}

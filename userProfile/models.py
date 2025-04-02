@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.db import models
 
 class Profile(models.Model):
+    PUBLIC = 'public'
+    PRIVATE = 'private'
     PRIVACY_CHOICES = [
         ('public', 'Public'),
         ('private', 'Private'),
