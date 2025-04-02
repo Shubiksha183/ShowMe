@@ -23,4 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('userProfile/', include('userProfile.urls')),
     path('posts/', include('posts.urls', namespace='posts')),
+    path('friends/', include('friends.urls', namespace='friends')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

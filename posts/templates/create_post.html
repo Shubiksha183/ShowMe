@@ -1,6 +1,7 @@
 {% block content %}
 <h2>All Posts</h2>
-
+<a href="{% url 'logout' %}">Logout</a>
+<a href="{% url 'friends:list' %}">See your friends</a>
 <!-- Post Form -->
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -23,6 +24,14 @@
         <source src="{{ post.video.url }}" type="video/mp4">
     </video>
     {% endif %}
+
+    {% if post.user != request.user and post.user not in friends %}
+    <form action="{% url 'friends:send_request' post.user.id %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Add Friend</button>
+    </form>
+    {% endif %}
+
     <hr>
 </div>
 {% endfor %}
