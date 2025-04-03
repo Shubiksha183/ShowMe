@@ -16,6 +16,8 @@ INSTALLED_APPS = [
     'userProfile',
     'posts',
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
     'friends',
 ]
 
@@ -79,3 +81,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}

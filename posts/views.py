@@ -1,43 +1,44 @@
-from django.shortcuts import render, redirect
-from .forms import PostForm
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
 from .models import Post
-from django.contrib.auth.decorators import login_required
+from .serializers import PostSerializer
 from userProfile.models import Profile
-from friends.models import Friendship  # Import Friendship model
-from django.db import models
+from friends.models import Friendship
 
-@login_required
-def create_post(request):
-    if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.user = request.user  
-            post.save()  
-            return redirect('posts:create_post')  # Refresh page after posting
+class PostListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    else:
-        form = PostForm()
+    def get(self, request):
+        # Fetch public users
+        public_users = Profile.objects.filter(privacy=Profile.PUBLIC).values_list('user', flat=True)
 
-    # Fetch public users
-    public_users = Profile.objects.filter(privacy=Profile.PUBLIC).values_list('user', flat=True)
+        # Fetch private users who are friends with the logged-in user
+        friends = Friendship.objects.filter(
+            Q(sender=request.user) | Q(receiver=request.user), accepted=True
+        ).values_list('sender', 'receiver')
 
-    # Fetch private users who are friends with the logged-in user
-    friends = Friendship.objects.filter(
-        (models.Q(sender=request.user) | models.Q(receiver=request.user)), accepted=True
-    ).values_list('sender', 'receiver')
+        # Extract unique friend IDs
+        friend_ids = set()
+        for sender, receiver in friends:
+            if sender != request.user.id:
+                friend_ids.add(sender)
+            if receiver != request.user.id:
+                friend_ids.add(receiver)
 
-    # Extract unique friend IDs
-    friend_ids = set()
-    for sender, receiver in friends:
-        if sender != request.user.id:
-            friend_ids.add(sender)
-        if receiver != request.user.id:
-            friend_ids.add(receiver)
+        # Fetch posts from public users + friends who are private
+        posts = Post.objects.filter(
+            Q(user__in=public_users) | Q(user__in=friend_ids)
+        ).order_by('-created_at')
 
-    # Fetch posts from public users + friends who are private
-    posts = Post.objects.filter(
-        models.Q(user__in=public_users) | models.Q(user__in=friend_ids)
-    ).order_by('-created_at')
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
 
-    return render(request, 'create_post.html', {'form': form, 'posts': posts})
+    def post(self, request):
+        serializer = PostSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)

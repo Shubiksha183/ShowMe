@@ -11,11 +11,11 @@
 
 <hr>
 
-<!-- Display Posts -->
 {% for post in posts %}
 <div>
     <p><strong>{{ post.user.username }}</strong> - {{ post.created_at }}</p>
     <p>{{ post.text_content }}</p>
+
     {% if post.image %}
     <img src="{{ post.image.url }}" width="200">
     {% endif %}
@@ -25,14 +25,20 @@
     </video>
     {% endif %}
 
-    {% if post.user != request.user and post.user not in friends %}
+    <!-- Add Friend Button Logic -->
+    {% if post.user != request.user %}
+    {% if post.user.id not in friends %}
     <form action="{% url 'friends:send_request' post.user.id %}" method="post">
         {% csrf_token %}
         <button type="submit">Add Friend</button>
     </form>
+    {% else %}
+    <p>You are already friends</p>
+    {% endif %}
     {% endif %}
 
     <hr>
 </div>
 {% endfor %}
+
 {% endblock %}
